@@ -1,5 +1,7 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { todoRouter } from "~/server/api/routers/todo";
+import { todoRouter } from "./routers/todo";
+
+
 
 /**
  * This is the primary router for your server.

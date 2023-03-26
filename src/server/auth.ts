@@ -1,14 +1,14 @@
-import { type GetServerSidePropsContext } from "next";
+import type { GetServerSidePropsContext } from "next";
 import {
   getServerSession,
   type NextAuthOptions,
   type DefaultSession,
 } from "next-auth";
+import EmailProvider from "next-auth/providers/email";
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { env } from "~/env.mjs";
-import { prisma } from "~/server/db";
-import EmailProvider from "next-auth/providers/email";
+import { prisma } from "./db";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -55,20 +55,23 @@ export const authOptions: NextAuthOptions = {
         auth: {
           user: process.env.EMAIL_SERVER_USER || "apikey",
           pass: process.env.EMAIL_SERVER_PASSWORD || "",
-        },
+        }
       },
       /** if were not in prod, we just get a link instead of full email-auth */
-      from: process.env.EMAIL_FROM || "noreply@example.com",
-      ...(process.env.NODE_ENV !== "production"
-        ? {
-            sendVerficationRequest({ url }: any) {
-              console.log("LOGIN LINK", url);
-            },
-          }
+      from: process.env.EMAIL_FROM || "noreply@default.com",
+
+      ...(process.env.NODE_ENV !== "production" 
+        ? {sendVerificationRequest({ url }) {
+          console.log("LOGIN LINK", url);
+        }}
         : {}),
     }),
 
 
+    DiscordProvider({
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+    }),
     /**
      * ...add more providers here.
      *

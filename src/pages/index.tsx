@@ -1,8 +1,9 @@
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
+import Todos from "./component/todos";
 
 export default function Home(){
-  const {data: sessionData} = useSession()
+  const { data: sessionData } = useSession();
   return(
     <>
       {/**Headers and h1 */}
@@ -13,9 +14,12 @@ export default function Home(){
       </Head>
       <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            fullstack <span className="text-[hsl(280,100%,70%)]">Todo List</span> with t3
+            t3 fullstack <span className="text-[hsl(280,100%,70%)]">Todo-List</span> by vincepr
           </h1>
+          {/** is we have sessionDate == were logged in -> our Todolist-App */}
+          {sessionData && (<TodoApp/>)}
         </div>
         {/** Our Login element */}
         <AuthShowcase/>
@@ -27,7 +31,6 @@ export default function Home(){
 
 const AuthShowcase: React.FC = () => {
   const { data: sessionData } = useSession();
-
 
   return (
     <div className="flex flex-col items-center justify-center gap-4">
@@ -43,3 +46,12 @@ const AuthShowcase: React.FC = () => {
     </div>
   );
 };
+
+function TodoApp(){
+  return <div className="grid grid-cols-1 gap-4 md:gap-8">
+    <div className="flex flex-col gap-4 rounded-xl p-4 bg-white/10 text-white ">
+      <h3 className="text-xl font-bold">Todo List</h3>
+      <Todos/>
+    </div>
+  </div>
+}

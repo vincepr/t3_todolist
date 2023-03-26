@@ -1,10 +1,10 @@
-import { todoInput } from "~/types/input";
-
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { todoInput } from "~/types/input";
+
 export const todoRouter = createTRPCRouter({
-  // we dont have any publicProcedures since we are login only for our todos.
+  // we dont have any publicProcedures since we are login only for our todos-list-service.
 
   // endpoint for fetching all Todos from a user
   getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -24,7 +24,7 @@ export const todoRouter = createTRPCRouter({
       },
       {
         id: "default",
-        text: "some fake text",
+        text: "some fake text2",
         done: true,
       },
     ];

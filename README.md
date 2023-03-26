@@ -3,14 +3,14 @@
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`. Using nextjs and all the 4 optional Frameworks to get a feeling for them. Namely Nextjs, Prisma, TRPC, NEXTAUTH, Tailwind.
 
 
-the goal include roughly:
-- using some kind of authentification (probably email and/or the Discord-auth)
+the endgoal is roughly following functionality:
+- using oauth (with NextAuthJs) some kind of authentification (probably email and/or the Discord-auth)
+- use the trpc + prisma to handle db and validation for the db.
 - todo functionaly only accessible for logged in users:
   - create a todo
   - show a list of todos
   - toggle todos completed-state
-  - delte todos
-- use the trpc + prisma to handle db and validation for the db.
+  - delete todos
 
 
 
@@ -59,24 +59,33 @@ model Todo {
 ```ts
 import  EmailProvider  from "next-auth/providers/email";
 // ...
-adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma),
   providers: [
     EmailProvider({
-      server:{
-        host: process.env.EMAIL_SERVER || "https://localhost:3000",
-        port: process.env.EMAIL_SERVER_PRT || 587,
+      server: {
+        host: process.env.EMAIL_SERVER_HOST || "https://localhost:3000",
+        port: process.env.EMAIL_SERVER_PORT || 587,
         auth: {
           user: process.env.EMAIL_SERVER_USER || "apikey",
-          pass: process.env.EMAIL_PASSWORD || "",
+          pass: process.env.EMAIL_SERVER_PASSWORD || "",
         }
       },
       /** if were not in prod, we just get a link instead of full email-auth */
-      from: process.env.EMAIL_FROM || "default@default.com",
-      ... (process.env.NODE_ENV !== "production" ? {sendVerficationRequest({url}){
-        console.log("LOGIN LINK", url)
-      }}:{}),
+      from: process.env.EMAIL_FROM || "noreply@default.com",
+
+      ...(process.env.NODE_ENV !== "production" 
+        ? {sendVerificationRequest({ url }) {
+          console.log("LOGIN LINK", url);
+        }}
+        : {}),
     }),
 
+    // just the default auth setup, we just leave untouched
+    DiscordProvider({
+      clientId: env.DISCORD_CLIENT_ID,
+      clientSecret: env.DISCORD_CLIENT_SECRET,
+    }),
+  ]
 ```
 
 
@@ -196,10 +205,137 @@ export type AppRouter = typeof appRouter;
 
 
 
+
 ### Login
+- we edit our root page at `src/pages/index.tsx`
+```tsx
+export default function Home(){
+  const {data: sessionData} = useSession()
+  return(
+    <>
+      {/**Headers and h1 */}
+      <Head>
+        <title>Todo List App with T3</title>
+        <meta name="description" content="fullstack todo with T3" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c]">
+        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
+          <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
+            fullstack <span className="text-[hsl(280,100%,70%)]">Todo List</span> with t3
+          </h1>
+        </div>
+        {/** Our Login element */}
+        <AuthShowcase/>
+      </main>
+    </>
+  )
+}
+
+const AuthShowcase: React.FC = () => {
+  const { data: sessionData } = useSession();
+
+  return (
+    <div className="flex flex-col items-center justify-center gap-4">
+      <p className="text-center text-2xl text-white">
+        {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
+      </p>
+      <button
+        className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
+        onClick={sessionData ? () => void signOut() : () => void signIn()}
+      >
+        {sessionData ? "Sign out" : "Sign in"}
+      </button>
+    </div>
+  );
+};
+
+```
+
+- now we can login with some fake@mail.de, click the magic-link from our console.log to login and then check our db `npx prisma studio` where in table:user we should see those new users. 
+
+
+
+
 ### Todos
 - list todos
 - create todos
 - toggle todos
 - delete todos
+
+First we add `{sessionData && (<TodoApp/>)}` to our index.tsx. Only when logged in, we will display the TodoApp Element.
+
+
+
+
+#### tRPC vodoo
+- we create `./src/types/types.ts` where we export a type for our Todo-Data struct. This file is fully inferred from tRPC-Routing.
+- we need this type for the next step
+```ts
+import type { inferRouterOutputs } from "@trpc/server";
+import type { AppRouter } from "./../server/api/root";
+
+/**
+ * Using this file to export tRPC generated Types
+ */
+
+// tRPC magic begins: first we do some abrakadabra
+type RouterOutputs = inferRouterOutputs<AppRouter>
+type allTodosOutput = RouterOutputs["todo"]["getAll"]
+
+// then we have a type that is infered from whatever our getAll Route spits out
+export type Todo = allTodosOutput[number]
+```
+
+
+
+
+#### list all todos
+- we create the base of our Todo-List component `/src/pages/component/todos.tsx`
+```ts
+// this where the tRPC magic happens. createTRPCNext from the {api} package will create
+// all the typesafety, inference and autocomplete for the data coming from our backend
+import { api } from "~/utils/api"
+import Todo from "./todo"
+
+// our Main Todo-Parent-Component, fetches our tRPC API and once that comes over passes it down
+export default function Todos(){
+    const{data:todos, isLoading, isError} = api.todo.getAll.useQuery()
+    if(isLoading)   return <>Fetching from DB</>
+    else if (isError)    return <>Error fetching from DB</>
+    else 
+
+    return <div>
+        {
+            todos.length 
+                ? todos.map(todo => <Todo key={todo.id} todo={todo}/>) 
+                : "Create your first todo by ..."
+        }
+    </div>
+}
+```
+- and in `/src/pages/component/todo.tsx` we draw out our data, notice how we import the Todo-type from the previous step.
+```tsx
+import type { Todo } from "~/types/types"
+export default function Todo({todo:{id, text, done}}:{todo:Todo}){
+    return <>
+        {text}
+    </>
+}
+
+```
+
+#### create new todos
+
+
+
+#### delete todos
+
+
+
+#### delete todos
+
+
+
+
 ### implement optimistic updates
