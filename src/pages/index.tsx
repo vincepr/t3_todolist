@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { signIn, signOut, useSession } from "next-auth/react";
-import Todos from "./component/todos";
+import TodoApp from "./component/todo_parent";
 
 export default function Home(){
   const { data: sessionData } = useSession();
@@ -8,7 +8,7 @@ export default function Home(){
     <>
       {/**Headers and h1 */}
       <Head>
-        <title>Todo List App with T3</title>
+        <title>Todolist App with T3</title>
         <meta name="description" content="fullstack todo with T3" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -16,7 +16,7 @@ export default function Home(){
         <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
 
           <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-[5rem]">
-            t3 fullstack <span className="text-[hsl(280,100%,70%)]">Todo-List</span> by vincepr
+            t3 fullstack <span className="text-[hsl(280,100%,70%)]">Todo</span>list
           </h1>
           {/** is we have sessionDate == were logged in -> our Todolist-App */}
           {sessionData && (<TodoApp/>)}
@@ -46,12 +46,3 @@ const AuthShowcase: React.FC = () => {
     </div>
   );
 };
-
-function TodoApp(){
-  return <div className="grid grid-cols-1 gap-4 md:gap-8">
-    <div className="flex flex-col gap-4 rounded-xl p-4 bg-white/10 text-white ">
-      <h3 className="text-xl font-bold">Todo List</h3>
-      <Todos/>
-    </div>
-  </div>
-}

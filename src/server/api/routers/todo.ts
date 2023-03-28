@@ -13,21 +13,21 @@ export const todoRouter = createTRPCRouter({
         userId: ctx.session.user.id,
       },
     });
-    //return todos.map( ({id, text, done})=>({id, text, done}) )  // we only return the 3 relevent columns
+    return todos.map( ({id, text, done})=>({id, text, done}) )  // we only return the 3 relevent columns
 
-    // some mokup data for now // :todo remove this later
-    return [
-      {
-        id: "fake",
-        text: "default text",
-        done: false,
-      },
-      {
-        id: "default",
-        text: "some fake text2",
-        done: true,
-      },
-    ];
+    // some mokup data for testing // :todo remove this later
+    // return [
+    //   {
+    //     id: "fake",
+    //     text: "default text",
+    //     done: false,
+    //   },
+    //   {
+    //     id: "default",
+    //     text: "some fake text2",
+    //     done: true,
+    //   },
+    // ];
   }),
 
   // endpoint for creating (a new todo)
