@@ -22,14 +22,14 @@ export default function Home(){
           {sessionData && (<TodoApp/>)}
         </div>
         {/** Our Login element */}
-        <AuthShowcase/>
+        <AuthModule/>
       </main>
     </>
   )
 }
 
 
-const AuthShowcase: React.FC = () => {
+const AuthModule: React.FC = () => {
   const { data: sessionData } = useSession();
 
   return (

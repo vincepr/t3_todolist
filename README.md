@@ -258,10 +258,10 @@ const AuthShowcase: React.FC = () => {
 
 
 ### Todos
-- list todos
-- create todos
-- toggle todos
-- delete todos
+- \[x\] list all todos
+- \[x\] create todos
+- \[x\] toggle todos
+- \[x\] delete todos
 
 First we add `{sessionData && (<TodoApp/>)}` to our index.tsx. Only when logged in, we will display the TodoApp Element.
 
@@ -324,18 +324,3 @@ export default function Todo({todo:{id, text, done}}:{todo:Todo}){
 }
 
 ```
-
-#### create new todos
-
-
-
-#### delete todos
-
-
-
-#### delete todos
-
-
-
-
-### implement optimistic updates
